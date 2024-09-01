@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Location Details</h1>
+    <div id="location-details"></div>
+    <img id="qr-code" alt="QR Code"/> <!-- Image tag to display QR code -->
+
+    <script>
+        // Get the location ID from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const locationId = urlParams.get('id');
+
+        // Check if locationId is present
+        if (!locationId) {
+            document.getElementById('location-details').innerText = 'Location ID is missing.';
+          
+        }
+
+        // Fetch location data from the server for the specific location ID
+        axios.get(`http://localhost:3000/api/locations/${locationId}`)
+            .then(response => {
+                const location = response.data;
+                const detailsDiv = document.getElementById('location-details');
+
+                // Display location details
+                const locationInfo = `<p><strong>Name:</strong> ${location.name}</p>
+                                      <p><strong>Latitude:</strong> ${location.latitude}</p>
+                                      <p><strong>Longitude:</strong> ${location.longitude}</p>`;
+                detailsDiv.innerHTML = locationInfo;
+
+                // Generate QR code URL and return the axios call
+                return axios.get(`http://localhost:3000/api/qr/${locationId}`);
+            })
+            .then(response => {
+                // Display the QR code image
+                const qrCodeImg = document.getElementById('qr-code');
+                qrCodeImg.src = response.data.qrCode;
+            })
+            .catch(error => {
+                console.error('Error fetching location details or QR code:', error);
+                document.getElementById('location-details').innerText = 'Error fetching location details or QR code.';
+            });
+    </script>
+</body>
+</html>
